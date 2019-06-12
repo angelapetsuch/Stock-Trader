@@ -1,0 +1,69 @@
+const state = {
+  funds: 10000,
+  stocks: []
+};
+
+// upon ordering a stock
+const mutations = {
+  BUY_STOCK(state, { stockId, quantity, stockPrice }) {
+    // check if we already have this stock in our portfolio
+    const record = state.stocks.find(element => element.id == stockId);
+    if (record) {
+      record.quantity += quantity;
+    } else {
+      // store this stock's data in my portfolio
+      state.stocks.push({
+        id: stockId,
+        quantity: quantity
+      });
+    }
+    state.funds -= stockPrice * quantity;
+  },
+  SELL_STOCK(state, { stockId, quantity, stockPrice }) {
+    const record = state.stocks.find(element => element.id == stockId);
+
+    if (record.quantity > quantity) {
+      // make sure we have enough stock to sell
+      record.quantity -= quantity;
+    } else {
+      // if youre out of this particular stock, remove it from array
+      state.stocks.splice(state.stocks.indexOf(record), 1);
+    }
+    state.funds += stockPrice * quantity;
+  },
+  SET_PORTFOLIO(state, portfolio) {
+    state.funds = portfolio.funds;
+    state.stocks = portfolio.stockPortfolio ? portfolio.stockPortfolio : [];
+  }
+};
+
+const actions = {
+  sellStock({ commit }, order) {
+    commit("SELL_STOCK", order);
+  }
+};
+
+const getters = {
+  // get current portfolio of Stocks
+  stockPortfolio(state, getters) {
+    return state.stocks.map(stock => {
+      const record = getters.stocks.find(element => element.id == stock.id);
+      return {
+        id: stock.id,
+        quantity: stock.quantity,
+        name: record.name,
+        price: record.price
+      };
+    });
+  },
+  funds(state) {
+    return state.funds;
+  }
+};
+
+export default {
+  state,
+  mutations,
+  actions,
+  getters
+};
